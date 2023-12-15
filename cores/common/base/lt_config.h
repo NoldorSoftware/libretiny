@@ -99,6 +99,10 @@
 #define LT_DEBUG_WIFI 1
 #endif
 
+#ifndef LT_DEBUG_LFS
+#define LT_DEBUG_LFS LT_DEBUG_ALL
+#endif
+
 #ifndef LT_DEBUG_CLIENT
 #define LT_DEBUG_CLIENT LT_DEBUG_ALL
 #endif

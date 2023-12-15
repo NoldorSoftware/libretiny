@@ -101,7 +101,7 @@ class LittleFSImpl : public FSImpl {
 		}
 		int rc = lfs_rename(&_lfs, pathFrom, pathTo);
 		if (rc != 0) {
-			LT_IM("lfs_rename: rc=%d, from=`%s`, to=`%s`\n", rc, pathFrom, pathTo);
+			LT_IM(LFS, "lfs_rename: rc=%d, from=`%s`, to=`%s`\n", rc, pathFrom, pathTo);
 			return false;
 		}
 		return true;
@@ -141,7 +141,7 @@ class LittleFSImpl : public FSImpl {
 		}
 		int rc = lfs_remove(&_lfs, path);
 		if (rc != 0) {
-			LT_IM("lfs_remove: rc=%d path=`%s`\n", rc, path);
+			LT_IM(LFS, "lfs_remove: rc=%d path=`%s`\n", rc, path);
 			return false;
 		}
 		// Now try and remove any empty subdirs this makes, silently
@@ -183,7 +183,7 @@ class LittleFSImpl : public FSImpl {
 			return true;
 		}
 		if ((_blockSize <= 0) || (_size <= 0)) {
-			LT_IM("LittleFS size is <= zero");
+			LT_IM(LFS, "LittleFS size is <= zero");
 			return false;
 		}
 		if (_tryMount()) {
@@ -205,7 +205,7 @@ class LittleFSImpl : public FSImpl {
 
 	bool format() override {
 		if ((_blockSize <= 0) || (_size <= 0)) {
-			LT_IM("lfs size is zero\n");
+			LT_IM(LFS, "lfs size is zero\n");
 			return false;
 		}
 
@@ -218,7 +218,7 @@ class LittleFSImpl : public FSImpl {
 		memset(&_lfs, 0, sizeof(_lfs));
 		int rc = lfs_format(&_lfs, &_lfs_cfg);
 		if (rc != 0) {
-			LT_IM("lfs_format: rc=%d\n", rc);
+			LT_IM(LFS, "lfs_format: rc=%d\n", rc);
 			return false;
 		}
 
@@ -228,13 +228,13 @@ class LittleFSImpl : public FSImpl {
 			time_t t = _timeCallback();
 			rc		 = lfs_setattr(&_lfs, "/", 'c', &t, 8);
 			if (rc != 0) {
-				LT_IM("lfs_format, lfs_setattr 'c': rc=%d\n", rc);
+				LT_IM(LFS, "lfs_format, lfs_setattr 'c': rc=%d\n", rc);
 				return false;
 			}
 
 			rc = lfs_setattr(&_lfs, "/", 't', &t, 8);
 			if (rc != 0) {
-				LT_IM("lfs_format, lfs_setattr 't': rc=%d\n", rc);
+				LT_IM(LFS, "lfs_format, lfs_setattr 't': rc=%d\n", rc);
 				return false;
 			}
 
@@ -396,7 +396,7 @@ class LittleFSFileImpl : public FileImpl {
 		}
 		int result = lfs_file_write(_fs->getFS(), _getFD(), (void *)buf, size);
 		if (result < 0) {
-			LT_IM("lfs_write rc=%d\n", result);
+			LT_IM(LFS, "lfs_write rc=%d\n", result);
 			return 0;
 		}
 		return result;
@@ -408,7 +408,7 @@ class LittleFSFileImpl : public FileImpl {
 		}
 		int result = lfs_file_read(_fs->getFS(), _getFD(), (void *)buf, size);
 		if (result < 0) {
-			LT_IM("lfs_read rc=%d\n", result);
+			LT_IM(LFS, "lfs_read rc=%d\n", result);
 			return 0;
 		}
 
@@ -421,7 +421,7 @@ class LittleFSFileImpl : public FileImpl {
 		}
 		int rc = lfs_file_sync(_fs->getFS(), _getFD());
 		if (rc < 0) {
-			LT_IM("lfs_file_sync rc=%d\n", rc);
+			LT_IM(LFS, "lfs_file_sync rc=%d\n", rc);
 		}
 	}
 
@@ -436,7 +436,7 @@ class LittleFSFileImpl : public FileImpl {
 		auto lastPos = position();
 		int rc		 = lfs_file_seek(_fs->getFS(), _getFD(), offset, (int)mode); // NB. SeekMode === LFS_SEEK_TYPES
 		if (rc < 0) {
-			LT_IM("lfs_file_seek rc=%d\n", rc);
+			LT_IM(LFS, "lfs_file_seek rc=%d\n", rc);
 			return false;
 		}
 		if (position() > size()) {
@@ -452,7 +452,7 @@ class LittleFSFileImpl : public FileImpl {
 		}
 		int result = lfs_file_tell(_fs->getFS(), _getFD());
 		if (result < 0) {
-			LT_IM("lfs_file_tell rc=%d\n", result);
+			LT_IM(LFS, "lfs_file_tell rc=%d\n", result);
 			return 0;
 		}
 
@@ -469,7 +469,7 @@ class LittleFSFileImpl : public FileImpl {
 		}
 		int rc = lfs_file_truncate(_fs->getFS(), _getFD(), size);
 		if (rc < 0) {
-			LT_IM("lfs_file_truncate rc=%d\n", rc);
+			LT_IM(LFS, "lfs_file_truncate rc=%d\n", rc);
 			return false;
 		}
 		return true;
@@ -479,20 +479,20 @@ class LittleFSFileImpl : public FileImpl {
 		if (_opened && _fd) {
 			lfs_file_close(_fs->getFS(), _getFD());
 			_opened = false;
-			LT_IM("lfs_file_close: fd=%p\n", _getFD());
+			LT_IM(LFS, "lfs_file_close: fd=%p\n", _getFD());
 			if (_timeCallback && (_flags & LFS_O_WRONLY)) {
 				// If the file opened with O_CREAT, write the creation time attribute
 				if (_creation) {
 					int rc = lfs_setattr(_fs->getFS(), _name.get(), 'c', (const void *)&_creation, sizeof(_creation));
 					if (rc < 0) {
-						LT_IM("Unable to set creation time on '%s' to %ld\n", _name.get(), (long)_creation);
+						LT_IM(LFS, "Unable to set creation time on '%s' to %ld\n", _name.get(), (long)_creation);
 					}
 				}
 				// Add metadata with last write time
 				time_t now = _timeCallback();
 				int rc	   = lfs_setattr(_fs->getFS(), _name.get(), 't', (const void *)&now, sizeof(now));
 				if (rc < 0) {
-					LT_IM("Unable to set last write time on '%s' to %ld\n", _name.get(), (long)now);
+					LT_IM(LFS, "Unable to set last write time on '%s' to %ld\n", _name.get(), (long)now);
 				}
 			}
 		}

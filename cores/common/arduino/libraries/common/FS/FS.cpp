@@ -213,7 +213,7 @@ File Dir::openFile(const char *mode) {
 	OpenMode om;
 	AccessMode am;
 	if (!sflags(mode, om, am)) {
-		LT_IM("Dir::openFile: invalid mode `%s`\r\n", mode);
+		LT_IM(LFS, "Dir::openFile: invalid mode `%s`\r\n", mode);
 		return File();
 	}
 
@@ -297,12 +297,12 @@ bool FS::setConfig(const FSConfig &cfg) {
 
 bool FS::begin() {
 	if (!_impl) {
-		LT_IM("#error: FS: no implementation");
+		LT_IM(LFS, "#error: FS: no implementation");
 		return false;
 	}
 	_impl->setTimeCallback(_timeCallback);
 	bool ret = _impl->begin();
-	LT_IM("%s\n", ret ? "" : "#error: FS could not start");
+	LT_IM(LFS, "%s\n", ret ? "" : "#error: FS could not start");
 	return ret;
 }
 
@@ -359,7 +359,7 @@ File FS::open(const char *path, const char *mode) {
 	OpenMode om;
 	AccessMode am;
 	if (!sflags(mode, om, am)) {
-		LT_IM("FS::open: invalid mode `%s`\r\n", mode);
+		LT_IM(LFS, "FS::open: invalid mode `%s`\r\n", mode);
 		return File();
 	}
 	File f(_impl->open(path, om, am), this);
@@ -508,7 +508,7 @@ template <>
 bool mount<FS>(FS &fs, const char *mountPoint) {
 	FSImplPtr p = fs._impl;
 	if (!p || !p->mount()) {
-		LT_IM("FSImpl mount failed\r\n");
+		LT_IM(LFS, "FSImpl mount failed\r\n");
 		return false;
 	}
 
@@ -529,7 +529,7 @@ File open(const char *path, const char *mode) {
 	OpenMode om;
 	AccessMode am;
 	if (!sflags(mode, om, am)) {
-		LT_IM("open: invalid mode `%s`\r\n", mode);
+		LT_IM(LFS, "open: invalid mode `%s`\r\n", mode);
 		return File();
 	}
 
