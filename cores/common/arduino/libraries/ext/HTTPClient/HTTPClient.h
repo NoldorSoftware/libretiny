@@ -235,7 +235,7 @@ class HTTPClient {
 	WiFiClient &getStream(void);
 	WiFiClient *getStreamPtr(void);
 	int writeToStream(Stream *stream);
-	// String getString(void);
+	String getString(void);
 
 	static String errorToString(int error);
 
