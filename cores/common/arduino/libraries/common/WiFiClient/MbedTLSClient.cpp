@@ -140,6 +140,7 @@ int MbedTLSClient::connect(
 	if (!(uint32_t)addr)
 		return -1;
 
+	
 	int ret = WiFiClient::connect(addr, port, timeout);
 	if (ret < 0) {
 		LT_EM(SSL, "SSL socket failed");
@@ -172,6 +173,7 @@ int MbedTLSClient::connect(
 
 	if (_insecure) {
 		mbedtls_ssl_conf_authmode(_sslCfg, MBEDTLS_SSL_VERIFY_NONE);
+		LT_EM(SSL, "SSL set to insecure");
 	} else if (rootCABuf) {
 		mbedtls_x509_crt_init(_caCert);
 		mbedtls_ssl_conf_authmode(_sslCfg, MBEDTLS_SSL_VERIFY_REQUIRED);
@@ -227,7 +229,7 @@ int MbedTLSClient::connect(
 		mbedtls_ssl_conf_own_cert(_sslCfg, _clientCert, _clientKeyC);
 	}
 
-	LT_VM(SSL, "Setting TLS hostname");
+	LT_VM(SSL, "Setting TLS hostname %s", host);
 	ret = mbedtls_ssl_set_hostname(_sslCtx, host);
 	LT_RET_NZ(ret);
 
@@ -247,8 +249,222 @@ int MbedTLSClient::connect(
 	unsigned long start = millis();
 	while (ret = mbedtls_ssl_handshake(_sslCtx)) {
 		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+			// LT_EM(SSL, "SSL handshake fail %x", ret);
 			LT_RET(ret);
+			
 		}
+		// if (ret == MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_FEATURE_UNAVAILABLE");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_INPUT_DATA) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_INPUT_DATA");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_INVALID_MAC) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_INVALID_MAC");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_INVALID_RECORD) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_INVALID_RECORD");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_CONN_EOF) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_CONN_EOF");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_UNKNOWN_CIPHER) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_UNKNOWN_CIPHER");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_NO_CIPHER_CHOSEN) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_NO_CIPHER_CHOSEN");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_NO_RNG) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_NO_RNG");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_NO_CLIENT_CERTIFICATE) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_NO_CLIENT_CERTIFICATE");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_CERTIFICATE_TOO_LARGE) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_CERTIFICATE_TOO_LARGE");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_CERTIFICATE_REQUIRED) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_CERTIFICATE_REQUIRED");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_PRIVATE_KEY_REQUIRED) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_PRIVATE_KEY_REQUIRED");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_CA_CHAIN_REQUIRED) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_CA_CHAIN_REQUIRED");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_PEER_VERIFY_FAILED) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_PEER_VERIFY_FAILED");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_CLIENT_HELLO) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_CLIENT_HELLO");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_SERVER_HELLO) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_SERVER_HELLO");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_CERTIFICATE) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_CERTIFICATE");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_CERTIFICATE_REQUEST) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_CERTIFICATE_REQUEST");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_SERVER_KEY_EXCHANGE) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_SERVER_KEY_EXCHANGE");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_SERVER_HELLO_DONE) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_SERVER_HELLO_DONE");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_CLIENT_KEY_EXCHANGE) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_CLIENT_KEY_EXCHANGE");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_CLIENT_KEY_EXCHANGE_RP) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_CLIENT_KEY_EXCHANGE_RP");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_CLIENT_KEY_EXCHANGE_CS) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_CLIENT_KEY_EXCHANGE_CS");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_CERTIFICATE_VERIFY) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_CERTIFICATE_VERIFY");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_CHANGE_CIPHER_SPEC) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_CHANGE_CIPHER_SPEC");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_FINISHED) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_FINISHED");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_ALLOC_FAILED) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_ALLOC_FAILED");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_HW_ACCEL_FAILED) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_HW_ACCEL_FAILED");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_HW_ACCEL_FALLTHROUGH) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_HW_ACCEL_FALLTHROUGH");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_COMPRESSION_FAILED) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_COMPRESSION_FAILED");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_PROTOCOL_VERSION) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_PROTOCOL_VERSION");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BAD_HS_NEW_SESSION_TICKET) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BAD_HS_NEW_SESSION_TICKET");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_SESSION_TICKET_EXPIRED) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_SESSION_TICKET_EXPIRED");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_PK_TYPE_MISMATCH) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_PK_TYPE_MISMATCH");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_UNKNOWN_IDENTITY) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_UNKNOWN_IDENTITY");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_INTERNAL_ERROR) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_INTERNAL_ERROR");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_COUNTER_WRAPPING) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_COUNTER_WRAPPING");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_WAITING_SERVER_HELLO_RENEGO) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_WAITING_SERVER_HELLO_RENEGO");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_BUFFER_TOO_SMALL");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_NO_USABLE_CIPHERSUITE) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_NO_USABLE_CIPHERSUITE");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_WANT_READ");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_WANT_WRITE");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_TIMEOUT) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_TIMEOUT");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_CLIENT_RECONNECT) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_CLIENT_RECONNECT");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_UNEXPECTED_RECORD) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_UNEXPECTED_RECORD");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_NON_FATAL) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_NON_FATAL");
+		// 	LT_RET(ret);
+		// }
+		// else if (ret == MBEDTLS_ERR_SSL_INVALID_VERIFY_HASH) {
+		// 	LT_EM(SSL, "MBEDTLS_ERR_SSL_INVALID_VERIFY_HASH");
+		// 	LT_RET(ret);
+		// }
+
+		// if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+		// 	LT_EM(SSL, "SSL handshake fail %x", ret);
+		// 	LT_RET(ret);
+		// }
+		// else {
+		// 	LT_IM(SSL, "SSL handshake ret = %d", ret);
+		// }
 		if ((millis() - start) > _handshakeTimeout) {
 			LT_EM(SSL, "SSL handshake timeout");
 			return -1;
