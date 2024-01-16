@@ -8,3 +8,5 @@
 #define LT_HAS_MBEDTLS	1
 #define LT_HAS_PRINTF	1
 #define LT_HW_BLE		1
+#define LT_HAS_OTA		1
+
