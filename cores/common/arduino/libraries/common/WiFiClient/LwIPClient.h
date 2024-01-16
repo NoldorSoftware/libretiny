@@ -13,10 +13,11 @@ class SocketHandle;
 
 class LwIPClient : public IWiFiClient {
   private:
-	bool _connected;
+
 	std::shared_ptr<SocketHandle> _sock;
 	std::shared_ptr<LwIPRxBuffer> _rxBuffer;
-
+  protected:
+	bool _connected;
   public:
 	LwIPClient();
 	LwIPClient(int sock);
